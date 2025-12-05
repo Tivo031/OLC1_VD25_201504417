@@ -1,0 +1,62 @@
+package analizadores;
+
+import java_cup.runtime.Symbol;
+import java.util.LinkedList;
+import Abstracto.Instruccion;
+import Simbolo.Tipo;
+import Simbolo.TipoDato;
+import Instrucciones.Print;
+import Expresiones.Nativo;
+
+// codigo java dentro del parser para manejar errores semanticos
+parser code 
+{:
+    scanner s;
+    parser(scanner s) { this.s = s; }
+    
+    public void syntax_error(Symbol s){
+        System.out.println("Error sintactico en la linea " + (s.left) + "y columna " + (s.right) + ". No se esperaba el siguiente componente: " + (s.value));
+    }
+    public void unrecovered_syntax_error(Symbol s){
+        System.out.println("Error sintactico no recuperable en la linea " + (s.left) + "y columna " + (s.right) + ". No se esperaba el siguiente componente: " + (s.value));
+    }
+:}
+//  Acumula el resultado de las instrucciones ejecutadas
+action code
+{: 
+:}
+
+
+// declaracion de terminales (tokens enviados por el scanner)
+terminal String CADENA, ENTERO, DECIMAL, ID;
+terminal FINCADENA, PRINT;
+terminal MAS, MENOS, MULT, DIV, MOD, POT;
+terminal PAR1, PAR2, LLAVE1, LLAVE2, COR1, COR2, PUNTO, COMA, DOSPUNTOS;
+terminal AND, OR, NOT;
+terminal IGUALIGUAL, DIFERENTE, MENORIGUAL, MAYORIGUAL, MENOR, MAYOR, ASIGNACION;
+
+// Declaración de no terminales 
+nonterminal LinkedList<Instruccion> INICIO, INSTRUCCIONES;
+nonterminal Instruccion INSTRUCCION;
+nonterminal Instruccion EXPRESION;
+
+// precedencia de operaciones, es decir, importancia
+precedence left MAS, MENOS;
+precedence left MULT, DIV;
+
+// GRAMATICA
+
+start with INICIO;
+
+INICIO ::= INSTRUCCIONES:a   {: RESULT = a; :}
+;
+
+INSTRUCCIONES ::= INSTRUCCIONES:a INSTRUCCION:b {: RESULT = a; RESULT.add(b); :}
+                | INSTRUCCION:a                {: RESULT = new LinkedList<>(); RESULT.add(a); :}
+;
+INSTRUCCION ::= PRINT PAR1 EXPRESION:a PAR2 FINCADENA {: RESULT =  new Print(a, aleft, aright);:}
+;
+EXPRESION ::= ENTERO:a      {: RESULT = new Nativo(Integer.parseInt(a), new Tipo(TipoDato.ENTERO), aleft, aright);:}   
+              | DECIMAL:a   {: RESULT = new Nativo(new Double(a), new Tipo(TipoDato.DECIMAL), aleft, aright);:}
+              | CADENA:a    {: RESULT = new Nativo(a, new Tipo(TipoDato.CADENA), aleft, aright);:}
+;
