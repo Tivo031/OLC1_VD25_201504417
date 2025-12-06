@@ -204,7 +204,7 @@ public class EditorCompilador extends JFrame {
             }
             consolaTextArea.setText(ast.getConsola());
         }catch(Exception ex){
-            consolaTextArea.setText("Error al Analizar!");
+            consolaTextArea.setText("Error al Analizar!" + ex.toString());
         }
     }
 

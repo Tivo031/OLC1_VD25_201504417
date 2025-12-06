@@ -5,8 +5,14 @@ import java.util.LinkedList;
 import Abstracto.Instruccion;
 import Simbolo.Tipo;
 import Simbolo.TipoDato;
+
+// Instrucciones
 import Instrucciones.Print;
+
+// Expresiones
 import Expresiones.Nativo;
+import Expresiones.OperadoresAritmeticos;
+import Expresiones.Aritmeticas;
 
 // codigo java dentro del parser para manejar errores semanticos
 parser code 
@@ -28,12 +34,14 @@ action code
 
 
 // declaracion de terminales (tokens enviados por el scanner)
-terminal String CADENA, ENTERO, DECIMAL, ID;
+terminal String CADENA, ENTERO, DECIMAL;
+terminal Character CHAR;
 terminal FINCADENA, PRINT;
-terminal MAS, MENOS, MULT, DIV, MOD, POT;
+terminal MAS, MENOS, MULT, DIV, MOD, POT, UMENOS; //UMENOS es para la negacion.
 terminal PAR1, PAR2, LLAVE1, LLAVE2, COR1, COR2, PUNTO, COMA, DOSPUNTOS;
 terminal AND, OR, NOT;
 terminal IGUALIGUAL, DIFERENTE, MENORIGUAL, MAYORIGUAL, MENOR, MAYOR, ASIGNACION;
+terminal TRUE, FALSE;
 
 // Declaración de no terminales 
 nonterminal LinkedList<Instruccion> INICIO, INSTRUCCIONES;
@@ -41,8 +49,9 @@ nonterminal Instruccion INSTRUCCION;
 nonterminal Instruccion EXPRESION;
 
 // precedencia de operaciones, es decir, importancia
-precedence left MAS, MENOS;
-precedence left MULT, DIV;
+precedence left MAS;
+precedence left MENOS;
+precedence right UMENOS;
 
 // GRAMATICA
 
@@ -56,7 +65,12 @@ INSTRUCCIONES ::= INSTRUCCIONES:a INSTRUCCION:b {: RESULT = a; RESULT.add(b); :}
 ;
 INSTRUCCION ::= PRINT PAR1 EXPRESION:a PAR2 FINCADENA {: RESULT =  new Print(a, aleft, aright);:}
 ;
-EXPRESION ::= ENTERO:a      {: RESULT = new Nativo(Integer.parseInt(a), new Tipo(TipoDato.ENTERO), aleft, aright);:}   
+EXPRESION ::= MENOS EXPRESION:a           {: RESULT = new Aritmeticas(OperadoresAritmeticos.NEGACION, a, aleft, aright); :} %prec UMENOS
+              | EXPRESION:a MAS EXPRESION:b  {: RESULT = new Aritmeticas(a, b, OperadoresAritmeticos.SUMA, aleft, aright); :} 
+              | ENTERO:a      {: RESULT = new Nativo(Integer.parseInt(a), new Tipo(TipoDato.ENTERO), aleft, aright);:}   
               | DECIMAL:a   {: RESULT = new Nativo(new Double(a), new Tipo(TipoDato.DECIMAL), aleft, aright);:}
               | CADENA:a    {: RESULT = new Nativo(a, new Tipo(TipoDato.CADENA), aleft, aright);:}
+              | CHAR:a {: RESULT = new Nativo(a, new Tipo(TipoDato.CARACTER), aleft, aright); :}
+              | TRUE:a        {:   RESULT = new Nativo(true, new Tipo(TipoDato.BOOLEANO), aleft, aright );   :}
+              | FALSE:a       {:   RESULT = new Nativo(false, new Tipo(TipoDato.BOOLEANO), aleft, aright );    :}
 ;

@@ -34,7 +34,7 @@ import java_cup.runtime.Symbol;
 ENTERO = [0-9]+
 DECIMAL = [0-9]+"."[0-9]+
 BLANCOS = [\ \r\t\n\f]+
-// ID = [A-Za-z_][A-Za-z0-9_]*
+CHAR = \'([^\'\\]|\\.)\'
 
 //SIMBOLOS
 PAR1 = "("
@@ -74,15 +74,22 @@ ASIGNACION = "="
 
 // PALABRAS RESERVADAS
 PRINT = "print"
+TRUE="true"
+FALSE="false"
 
 %%
 
 // REGLAS LEXICAS
 
 //EXPRESIONES REGULARES
+<YYINITIAL> {BLANCOS} {}
 <YYINITIAL> {DECIMAL} {return new Symbol(sym.DECIMAL, yyline, yycolumn, yytext());}
 <YYINITIAL> {ENTERO} {return new Symbol(sym.ENTERO, yyline, yycolumn, yytext());}
-<YYINITIAL> {BLANCOS} {}
+<YYINITIAL> {CHAR} {
+    String texto = yytext();       // 'A'
+    char contenido = texto.charAt(1);  // A
+    return new Symbol(sym.CHAR, yyline, yycolumn, contenido);
+}
 
 //SIMBOLOS
 <YYINITIAL> {PAR1} {return new Symbol(sym.PAR1, yyline, yycolumn, yytext());}
@@ -121,9 +128,8 @@ PRINT = "print"
 
 // PALABRAS RESERVADAS
 <YYINITIAL> {PRINT} {return new Symbol(sym.PRINT, yyline, yycolumn, yytext());}
-
-
-
+<YYINITIAL> {TRUE} {return new Symbol(sym.TRUE, yyline, yycolumn,yytext());}
+<YYINITIAL> {FALSE} {return new Symbol(sym.FALSE, yyline, yycolumn,yytext());}
 
 //  Detección del inicio de una cadena. Cuando encuentra una comilla, cambia al estado CADENA
 // yybegin(CADENA); -> inicia el estado de la cadena
